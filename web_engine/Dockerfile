@@ -40,14 +40,17 @@ WORKDIR /var/www/
 # expose container ports for HTTP on 5000.
 EXPOSE 5000
 
-CMD mod_wsgi-express start-server web_engine/wsgi.py \
-  --user www-data --group www-data \
-  --port=5000 \
-  --reload-on-changes \
-  --log-to-terminal \
-  --startup-log \
-  --locale C.UTF-8 \
-  --server-root=/etc/mod_wsgi-express-80
+#CMD mod_wsgi-express start-server web_engine/wsgi.py \
+#  --user www-data --group www-data \
+#  --port=5000 \
+#  --reload-on-changes \
+#  --log-to-terminal \
+#  --startup-log \
+#  --locale C.UTF-8 \
+#  --server-root=/etc/mod_wsgi-express-80
+
+WORKDIR /var/www/web_engine
+CMD python route.py
 
 #CMD /bin/bash
 #CMD /etc/mod_wsgi-express-80/apachectl start
