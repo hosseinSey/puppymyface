@@ -1,0 +1,7 @@
+docker-compose.yml
+__pycache__
+keys/
+.DS_Store
+.project
+.pydevproject
+secrets.py

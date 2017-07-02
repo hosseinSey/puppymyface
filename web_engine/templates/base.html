@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Puppy My Face</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="static/css/bootstrap.css">
+	<link rel="stylesheet" href="static/css/single_result.css">
+	<link rel="stylesheet" href="static/css/main.css">
+	<link rel="stylesheet" href="static/css/signin.css">
+	<script type="text/javascript" src="static/js/d3.js"></script>
+  </head>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+			<a href="/">
+			<h1>Puppy My Face</h1>
+			</a>
+			</div>
+		</div>
+		<div class="row">
+		{% block content %}
+		{% endblock %}
+		</div>
+		<div class="row">
+			<div class="col-xs-12 text-center info">
+				<hr>
+				<h5>You are visitor number <b>{{ visit_number }}</b> since <b>{{ since }}</b>.</h5>
+			</div>
+		</div>
+		
+  </div>
+</body>
+
+</html>

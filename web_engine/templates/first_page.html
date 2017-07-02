@@ -1,0 +1,45 @@
+{% extends "base.html"%}
+
+{% block content%}
+	
+	<br>
+
+	<form class="form-horizontal">
+		<div class="row" style="margin-left:2px; margin-right:2px;">
+			<div class="col-sm-12">
+				<div class="input-group input-group-lg">
+					<input type="text" class="form-control" placeholder="Type Something..." name="q" value="{{search_expr}}" autofocus>
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="submit">Go!</button>
+					</span>
+				</div><!-- /input-group -->
+					<button type="button" class="btn btn-primary btn-lg">Large button</button>
+			</div><!-- /.col-lg-6 -->
+		</div>
+	</form>
+
+	</br>
+
+	<form class="form-horizontal">
+		<div class="row" style="margin-left:2px; margin-right:2px;">
+			<div class="col-sm-12">
+				<div class="input-group input-group-lg">
+					<input type="input" class="form-control" placeholder="Type Something..." name="q" value="{{search_expr}}" autofocus>
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="submit">Go!</button>
+					</span>
+				</div><!-- /input-group -->
+					<button type="button" class="btn btn-primary btn-lg">Large button</button>
+			</div><!-- /.col-lg-6 -->
+		</div>
+	</form>
+	</br>
+
+
+
+	
+	{{search_results | safe}}
+
+{% endblock %} 
+
+
