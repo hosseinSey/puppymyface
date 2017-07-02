@@ -4,11 +4,11 @@
 	
 	<br>
 
-	<form class="form-horizontal" action= "upload" method="post" enctype="multipart/form-data">
+	<form class="form-horizontal"  method="post" enctype="multipart/form-data">
 		<div class="row" style="margin-left:2px; margin-right:2px;">
 			<div class="col-sm-12">
 				<div class="input-group input-group-lg">
-					<input type="file" name="file" class="btn btn-lg">
+					<input type="file" name="file">
 				    <p class="help-block">Upload a photo of a dog or human.</p>
 				    <br />
 					<input type="submit" class="btn btn-primary btn-lg" value="Upload">
@@ -18,6 +18,13 @@
 	</form>
 	
 	<br />
+	<div class="row" style="margin-left:2px; margin-right:2px;">
+		<div class="col-xs-12">
+			<hr>
+			<h5>[ <b>{{ visit_number }}</b> visits since <b>{{ since }}</b> ]</h5>
+		</div>
+	</div>
+	
 
 {% endblock %} 
 

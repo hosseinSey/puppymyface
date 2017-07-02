@@ -32,9 +32,6 @@ RUN pip install -r /var/www/requirements.txt
 
 ##################### INSTALLATION END #####################
 
-#copy the entire application 
-ADD . /var/www/web_engine
-
 # Create the upload folder with the permission  
 RUN mkdir /tmp/uploads
 RUN chmod 777 /tmp/uploads
@@ -43,6 +40,9 @@ WORKDIR /var/www/
 
 # expose container ports for HTTP on 5000.
 EXPOSE 5000
+
+#copy the entire application 
+ADD . /var/www/web_engine
 
 CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --user www-data --group www-data \

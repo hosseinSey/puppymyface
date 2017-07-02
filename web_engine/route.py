@@ -12,7 +12,7 @@ from .config import BaseConfig
 from flask import render_template, request, redirect, url_for, send_from_directory
 from werkzeug import secure_filename
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 #UPLOAD_FOLDER = 'web_engine/uploads/'
 UPLOAD_FOLDER = '/tmp/uploads'
 
@@ -34,14 +34,15 @@ def site_analytics():
 
 # For a given file, return whether it's an allowed type or not
 def allowed_file(filename):
+    filename = str(filename).lower()
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 # This route will show a form to perform an AJAX request
 # jQuery is loaded to execute the request and update the
 # value of the operation
-@app.route('/')
-def home():
+@app.route('/home2')
+def home2():
     site_analytics()
 
     return render_template('first_page.html', 
@@ -49,31 +50,40 @@ def home():
                            since = redis.get('first_visit_day').decode())
 
 # Route that will process the file upload
-@app.route('/upload', methods=['POST'])
-def upload():
-    # Get the name of the uploaded file
-    file = request.files['file']
-    # Check if the file is one of the allowed types/extensions
-    if file and allowed_file(file.filename):
-        # Make the filename safe, remove unsupported chars
-        filename = secure_filename(file.filename)
-        # Move the file form the temporal folder to
-        # the upload folder we setup
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(file_path)
-        # Redirect the user to the uploaded_file route, which
-        # will basicaly show on the browser the uploaded file
-        
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            return render_template('error.html')
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            return render_template('error.html')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            return redirect(url_for('uploaded_file',
+                                    filename = filename))
+        else: 
+            return render_template('error.html')
+    else: 
+        site_analytics()
+        return render_template('first_page.html', 
+                           visit_number = redis.get('hits').decode(),
+                           since = redis.get('first_visit_day').decode())
         #return "success"
-        import subprocess
-        subprocess.call(['chmod', '0744', file_path])
+        #import subprocess
+        #subprocess.call(['chmod', '0744', file_path])
         
-        from os import listdir
-        from os.path import isfile, join
-        onlyfiles = [f for f in listdir(UPLOAD_FOLDER) if isfile(join(UPLOAD_FOLDER, f))]
+        #from os import listdir
+        #from os.path import isfile, join
+        #onlyfiles = [f for f in listdir(UPLOAD_FOLDER) if isfile(join(UPLOAD_FOLDER, f))]
         #return str(onlyfiles)
     
-        return redirect(url_for('uploaded_file', filename=filename))
+        # Redirect the user to the uploaded_file route, which
+        # will basicaly show on the browser the uploaded file
 
 # This route is expecting a parameter containing the name
 # of a file. Then it will locate that file on the upload
@@ -82,7 +92,7 @@ def upload():
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER,
-                               filename)
+                               filename) 
 
 
 @app.route('/test')
