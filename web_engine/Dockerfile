@@ -30,27 +30,31 @@ RUN mkdir /var/www/web_engin/
 COPY requirements.txt /var/www/requirements.txt
 RUN pip install -r /var/www/requirements.txt
 
+##################### INSTALLATION END #####################
+
 #copy the entire application 
 ADD . /var/www/web_engine
 
-##################### INSTALLATION END #####################
+# Create the upload folder with the permission  
+RUN mkdir /tmp/uploads
+RUN chmod 777 /tmp/uploads
 
 WORKDIR /var/www/
 
 # expose container ports for HTTP on 5000.
 EXPOSE 5000
 
-#CMD mod_wsgi-express start-server web_engine/wsgi.py \
-#  --user www-data --group www-data \
-#  --port=5000 \
-#  --reload-on-changes \
-#  --log-to-terminal \
-#  --startup-log \
-#  --locale C.UTF-8 \
-#  --server-root=/etc/mod_wsgi-express-80
+CMD mod_wsgi-express start-server web_engine/wsgi.py \
+  --user www-data --group www-data \
+  --port=5000 \
+  --reload-on-changes \
+  --log-to-terminal \
+  --startup-log \
+  --locale C.UTF-8 \
+  --server-root=/etc/mod_wsgi-express-80
 
-WORKDIR /var/www/web_engine
-CMD python route.py
+#WORKDIR /var/www/web_engine
+#CMD python route.py
 
 #CMD /bin/bash
 #CMD /etc/mod_wsgi-express-80/apachectl start

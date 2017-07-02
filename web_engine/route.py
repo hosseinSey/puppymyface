@@ -1,33 +1,24 @@
-#from web_engine import app
+from web_engine import app
 
 # for running on the local machine: 
-#if __name__ == '__main__': 
-from flask import Flask
-app = Flask('web_engine') #app = Flask('web_engine')
+if __name__ == '__main__': 
+    from flask import Flask
+    app = Flask('web_engine') #app = Flask('web_engine')
 
 import os
 from time import localtime, strftime
 from redis import Redis 
-#from .config import BaseConfig
-class BaseConfig(object):
-    SECRET_KEY = 'none'
-    DEBUG = False
-    REDIS_HOST = 'redis'
-    REDIS_PORT = 6379
-
-
+from .config import BaseConfig
 from flask import render_template, request, redirect, url_for, send_from_directory
 from werkzeug import secure_filename
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 #UPLOAD_FOLDER = 'web_engine/uploads/'
-UPLOAD_FOLDER = 'uploads/'
+UPLOAD_FOLDER = '/tmp/uploads'
 
 app.config.from_object(BaseConfig)
 
-#redis = Redis(host = app.config['REDIS_HOST'], port = app.config['REDIS_PORT'])
-redis = None
-
+redis = Redis(host = app.config['REDIS_HOST'], port = app.config['REDIS_PORT'])
 
 def site_analytics():
     '''
@@ -41,21 +32,6 @@ def site_analytics():
         redis.set('first_visit_day', strftime("%d %b %Y", localtime()))    
     redis.incr('hits')
 
-@app.route('/home')
-def home_page():
-    site_analytics()
-    
-    return render_template('first_page.html', 
-                           visit_number = redis.get('hits').decode(),
-                           since = redis.get('first_visit_day').decode())
-
-# We'll render HTML templates and access data sent by POST
-# using the request object from flask. Redirect and url_for
-# will be used to redirect the user once the upload is done
-# and send_from_directory will help us to send/show on the
-# browser the file that the user just uploaded
-
-
 # For a given file, return whether it's an allowed type or not
 def allowed_file(filename):
     return '.' in filename and \
@@ -65,8 +41,12 @@ def allowed_file(filename):
 # jQuery is loaded to execute the request and update the
 # value of the operation
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home():
+    site_analytics()
+
+    return render_template('first_page.html', 
+                           visit_number = redis.get('hits').decode(),
+                           since = redis.get('first_visit_day').decode())
 
 # Route that will process the file upload
 @app.route('/upload', methods=['POST'])
