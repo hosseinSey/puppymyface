@@ -25,8 +25,7 @@ RUN apt-get install -y \
 # Install the WSGI interface into Python
 RUN pip install mod_wsgi
 
-# intall application requirements in a separate step so that it doesn't invalidate Docker's cache
-RUN mkdir /var/www/web_engin/
+# intall application requirements in this separate step so that it doesn't invalidate Docker's cache
 COPY requirements.txt /var/www/requirements.txt
 RUN pip install -r /var/www/requirements.txt
 
@@ -38,11 +37,17 @@ RUN chmod 777 /tmp/uploads
 
 WORKDIR /var/www/
 
-# expose container ports for HTTP on 5000.
-EXPOSE 5000
+# expose container ports for HTTP on 5000 and for HTTPS on 443.
+# If you are using the --https-only option for Apache,
+# use --https-port 443 and expose 443 for https. Otherwise, there
+# will be a mix up in the forwarding. 
+EXPOSE 5000 443
 
 #copy the entire application 
 ADD . /var/www/web_engine
+
+# make certificates accessible only by the root user
+RUN chmod 600 web_engine/ssl-certs/*
 
 CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --user www-data --group www-data \
@@ -51,7 +56,14 @@ CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --log-to-terminal \
   --startup-log \
   --locale C.UTF-8 \
-  --server-root=/etc/mod_wsgi-express-80
+  --server-root=/etc/mod_wsgi-express-80 \
+  --https-port 443 \
+  --https-only \
+  --server-name www.puppymyface.com \
+  --server-alias puppymyface.com \
+  --ssl-certificate-key-file ./web_engine/ssl-certs/server.key \
+  --ssl-certificate-file ./web_engine/ssl-certs/server.crt \
+  --ssl-certificate-chain-file ./web_engine/ssl-certs/gd_bundle-g2-g1.crt
 
 #WORKDIR /var/www/web_engine
 #CMD python route.py

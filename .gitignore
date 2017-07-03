@@ -1,3 +1,4 @@
+ssl-certs/
 uploads/
 docker-compose.yml
 __pycache__

@@ -63,9 +63,12 @@ def home():
             return render_template('error.html')
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            return redirect(url_for('uploaded_file',
-                                    filename = filename))
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(file_path)
+            # Redirect the user to the uploaded_file route, which
+            # will basicaly show on the browser the uploaded file
+            #return redirect(url_for('send_file', filename = filename))
+            return render_template('result_page.html', image = filename)
         else: 
             return render_template('error.html')
     else: 
@@ -73,41 +76,15 @@ def home():
         return render_template('first_page.html', 
                            visit_number = redis.get('hits').decode(),
                            since = redis.get('first_visit_day').decode())
-        #return "success"
-        #import subprocess
-        #subprocess.call(['chmod', '0744', file_path])
-        
-        #from os import listdir
-        #from os.path import isfile, join
-        #onlyfiles = [f for f in listdir(UPLOAD_FOLDER) if isfile(join(UPLOAD_FOLDER, f))]
-        #return str(onlyfiles)
     
-        # Redirect the user to the uploaded_file route, which
-        # will basicaly show on the browser the uploaded file
 
 # This route is expecting a parameter containing the name
 # of a file. Then it will locate that file on the upload
 # directory and show it on the browser, so if the user uploads
 # an image, that image is going to be show after the upload
 @app.route('/uploads/<path:filename>')
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER,
-                               filename) 
-
-
-@app.route('/test')
-def test():
-    output = ''
-    output += 'Hey There!'
-    output += '<hr>'
-    output += '<br>'
-    output += 'The time is now: '
-    output += strftime("%a, %d %b %Y %H:%M:%S", localtime())
-    output += '<br>'
-    output += strftime("%d %b %Y", localtime())
-    output += '<br>'
-
-    return output 
+def send_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename) 
 
 if __name__ == '__main__':
     app.run(host = "0.0.0.0", port = 5000, debug = True)

@@ -1,3 +1,12 @@
+### Tutorials: 
+	Uploading Files to a Database in Flask: 
+	https://www.youtube.com/watch?v=TLgVEBuQURA
+
+	Returning Files From a Database in Flask:
+	https://www.youtube.com/watch?v=QPI3rzZow6k
+
+
+### How to run containers on an EC2 instance: 
 on EC2 instance:
 sudo service docker start
 
