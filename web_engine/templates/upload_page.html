@@ -1,0 +1,24 @@
+{% extends "base.html"%}
+
+{% block content %}
+	<div class="col-lg-12">
+		<img src="{{ url_for('send_file', filename=image) }}" alt={{ image }} width="200">
+	</div> 
+	<br /> 
+		
+	<form class="form-horizontal"  method="post" enctype="multipart/form-data">
+		<div class="row" style="margin-left:2px; margin-right:2px;">
+			<div class="col-sm-12">
+				<div class="input-group input-group-lg">
+				    <p class="help-block">{{ msg }}</p>
+				    <br />
+					<input type="submit" class="btn btn-primary btn-lg" value="Puppy Me!">
+				</div>
+			</div>
+		</div>
+	</form>
+	
+
+{% endblock %} 
+
+

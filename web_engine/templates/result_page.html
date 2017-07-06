@@ -1,15 +1,28 @@
 {% extends "base.html"%}
 
 {% block content%}
-	
-	<br>
-	<div class="row" style="margin-left:2px; margin-right:2px;">
-		<div class="col-sm-12">
-			<img src="{{ url_for('send_file', filename=image) }}" alt={{ image }} width="200">
-		</div> 
+	<div></div>
+	<div class="col-lg-12">
+		<img src="{{ url_for('send_file', filename=image) }}" alt={{ image }} width="200">
+	</div> 
+	<br /> 
+	<div class="col-lg-12">
+	{{ msg }}
 	</div>
-
 	<br />
+	<hr>
+	<br /> 
+	<div>
+	{% if breed_name %}
+		<p> Here are some more examples from the breed: </p>
+		{% for i in range(3) %}
+			<div class="col-lg-12">
+				<img src="{{ url_for('send_dog_file', breed_name=breed_name, index=i) }}" alt={{ breed_name }} width="200">
+			</div> 
+			<br /> 
+		{% endfor %}
+		</div>
+	{% endif %}
 
 {% endblock %} 
 

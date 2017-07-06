@@ -35,8 +35,6 @@ RUN pip install -r /var/www/requirements.txt
 RUN mkdir /tmp/uploads
 RUN chmod 777 /tmp/uploads
 
-WORKDIR /var/www/
-
 # expose container ports for HTTP on 5000 and for HTTPS on 443.
 # If you are using the --https-only option for Apache,
 # use --https-port 443 and expose 443 for https. Otherwise, there
@@ -45,6 +43,8 @@ EXPOSE 5000 443
 
 #copy the entire application 
 ADD . /var/www/web_engine
+
+WORKDIR /var/www/
 
 # make certificates accessible only by the root user
 RUN chmod 600 web_engine/ssl-certs/*
