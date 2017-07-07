@@ -5,9 +5,9 @@ docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 
 # remove all container images 
- docker rmi --force $(docker images -q)
+# docker rmi --force $(docker images -q)
 
 # remove all [dangling]  docker volumes
- docker volume rm $(docker volume ls -qf dangling=true)
+# docker volume rm $(docker volume ls -qf dangling=true)
 
 # rm -rf ~/Library/Containers/com.docker.docker/Data/*

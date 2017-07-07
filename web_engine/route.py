@@ -5,11 +5,13 @@ if __name__ == '__main__':
     from flask import Flask
     app = Flask('web_engine') #app = Flask('web_engine')
 
+import io
+import pickle            
 import os
 from time import localtime, strftime
 from redis import Redis 
 from .config import BaseConfig
-from flask import render_template, request, redirect, url_for, send_from_directory
+from flask import render_template, request, redirect, url_for, send_from_directory, send_file
 from werkzeug import secure_filename
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -60,17 +62,24 @@ def home():
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
-            return render_template('error.html')
+            error_message = "It seems no file was selected."
+            return render_template('error.html', message = error_message)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(file_path)
-            # Redirect the user to the uploaded_file route, which
-            # will basicaly show on the browser the uploaded file
-            #return redirect(url_for('send_file', filename = filename))
+            # Store the image into the cache. To do so, we need to pickle the saved image. 
+            # Otherwise, the image can not be retrieved from Redis
+            output = io.BytesIO() 
+            file.save(output)
+            output.seek(0)
+            redis.set(filename, pickle.dumps(output))
+            output.close()
+            # This is how to retrieve the image:  
+            #file_object = pickle.loads(redis.get(filename))
+            #return send_file(file_object, mimetype='image/' + filename.split('.')[-1]) 
             return redirect(url_for('upload_page', filename = filename))
-        else: 
-            return render_template('error.html')
+        else:
+            error_message = "Are you sure you are uploading an image file? " 
+            return render_template('error.html', message = error_message)
     else: 
         site_analytics()
         return render_template('first_page.html', 
@@ -78,26 +87,28 @@ def home():
                            since = redis.get('first_visit_day').decode())
     
 
-# This route is expecting a parameter containing the name
-# of a file. Then it will locate that file on the upload
-# directory and show it on the browser, so if the user uploads
-# an image, that image is going to be show after the upload
-@app.route('/uploads/<filename>')
-def send_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename) 
+@app.route('/files/<filename>')
+def send_file_from_cache(filename):
+    '''
+    Send a file from the cache such as redis.
+    '''
+    file_extension = filename.split('.')[-1] 
+    if redis.get(filename) and file_extension in ALLOWED_EXTENSIONS: 
+        file_object = pickle.loads(redis.get(filename))
+        mimetype = 'image/' + file_extension
+        return send_file(file_object, mimetype = mimetype)
 
 @app.route('/dogs/<breed_name>/<index>')
 def send_dog_file(breed_name, index):
     from .src.face_recognizer import dog_files_for_breed
     paths, files = dog_files_for_breed(breed_name)
-    return send_from_directory(paths[int(index % len(paths))], files[int(index % len(files))]) 
+    return send_from_directory(paths[int(index) % len(paths)], files[int(index) % len(files)]) 
 
 
 @app.route('/upload/<filename>', methods=['GET', 'POST'])
 def upload_page(filename):
     from .src.face_recognizer import face_detector
-    full_image_path = os.path.join(UPLOAD_FOLDER, filename)
-    nr_human = face_detector(full_image_path)
+    nr_human = face_detector(pickle.loads(redis.get(filename)))
 
     message = "We recognized {} human face{} in the picture you uploaded.".format(nr_human, 's' if nr_human > 1 else '')
     if request.method == 'POST': 
@@ -107,6 +118,7 @@ def upload_page(filename):
 
 @app.route('/result/<filename>')
 def result_page(filename):
+    '''
     from .src.recognizer import face_detector, dog_detector, Resnet50_predict_breed, dog_files_for_breed
     from glob import glob 
     full_image_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -125,6 +137,9 @@ def result_page(filename):
         message =  'The human face in the picture resembles the "{}"'.format(breed.replace('_', ' '))
     elif is_dog: 
         message = 'The breed of dog in the picture is "{}"'.format(breed.replace('_', ' '))
+    '''
+    breed = "Belgian_sheepdog"
+    message = "This page is still beta. The test breed is " + breed
 
     return render_template('result_page.html', image = filename, msg = message, breed_name = breed)
 

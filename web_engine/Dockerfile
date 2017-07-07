@@ -44,7 +44,7 @@ EXPOSE 5000 443
 #copy the entire application 
 ADD . /var/www/web_engine
 
-WORKDIR /var/www/
+WORKDIR /var/www
 
 # make certificates accessible only by the root user
 RUN chmod 600 web_engine/ssl-certs/*
@@ -56,14 +56,15 @@ CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --log-to-terminal \
   --startup-log \
   --locale C.UTF-8 \
-  --server-root=/etc/mod_wsgi-express-80 \
-  --https-port 443 \
-  --https-only \
-  --server-name www.puppymyface.com \
-  --server-alias puppymyface.com \
-  --ssl-certificate-key-file ./web_engine/ssl-certs/server.key \
-  --ssl-certificate-file ./web_engine/ssl-certs/server.crt \
-  --ssl-certificate-chain-file ./web_engine/ssl-certs/gd_bundle-g2-g1.crt
+  --server-root=/etc/mod_wsgi-express-80 
+  
+#  --https-port 443 \
+#  --server-name www.puppymyface.com \
+#  --server-alias puppymyface.com \
+#  --https-only \
+#  --ssl-certificate-key-file ./web_engine/ssl-certs/server.key \
+#  --ssl-certificate-file ./web_engine/ssl-certs/server.crt \
+#  --ssl-certificate-chain-file ./web_engine/ssl-certs/gd_bundle-g2-g1.crt
 
 #WORKDIR /var/www/web_engine
 #CMD python route.py
