@@ -9,6 +9,8 @@ import os
 class BaseConfig(object):
     SECRET_KEY = os.environ['SECRET_KEY']
     DEBUG = os.environ['DEBUG']
-    REDIS_HOST = os.environ['REDIS_HOST'] #'redis'
-    REDIS_PORT = os.environ['REDIS_PORT'] #6379
+    IMAGE_CACHE_HOST = os.environ['IMAGE_CACHE_HOST'] #'redis'
+    IMAGE_CACHE_PORT = os.environ['IMAGE_CACHE_PORT'] #6379
+    META_CACHE_HOST = os.environ['META_CACHE_HOST'] 
+    META_CACHE_PORT = os.environ['META_CACHE_PORT'] 
 

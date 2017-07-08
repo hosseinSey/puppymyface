@@ -37,6 +37,8 @@ def dog_files_for_breed(breed, num_dogs = 3):
     '''returns the path to files for this dog breed'''
     dog_files_for_this_breed = glob(os.path.join(DOG_IMAGES_PATH, 'dogImagesTest/*' + breed + '/*'))
     selected_dog_paths = dog_files_for_this_breed #np.random.choice(dog_files_for_this_breed, size=num_dogs, replace=False)
+    if not selected_dog_paths: 
+        return None, None 
     paths = []
     dog_files = []
     for p in selected_dog_paths: 

@@ -1,4 +1,4 @@
-# this is substitute for the long and tedious "docker run [millions of options]" command
+# this is substitute  for the long and tedious "docker run [millions of options]" command
 version: '2'
 services:
     web:

@@ -2,6 +2,7 @@ dogImagesTest/
 ssl-certs/
 uploads/
 docker-compose.yml
+ec2-docker-compose.yml
 __pycache__
 keys/
 .DS_Store

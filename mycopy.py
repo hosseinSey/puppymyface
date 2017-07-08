@@ -34,7 +34,7 @@ After creating the docker registry repo, go to the [ECS page](https://console.aw
  - Build your Docker image using the following command. For information on building a Docker file from scratch see the instructions here. You can skip this step if your image is already built:
    `docker build -t puppymyface ./web_engine/'
 	 `docker build -t cnn_puppier ./puppier/`
-	 `docker build -t blob_cache -f ./redis_containers/dockerfile_blob_redis ./redis_containers/`
+	 `ddocker build -t blob_cache -f ./redis_containers/dockerfile_blob_redis ./redis_containers/`
  - After the build completes, tag your image so you can push the image to this repository:
    `docker tag puppymyface:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest`
 	 `docker tag cnn_puppier:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`

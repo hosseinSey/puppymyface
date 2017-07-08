@@ -12,7 +12,8 @@ import traceback
 import pickle
 #from recognizer import dog_names
 
-image_cache = Redis(host = config.BaseConfig.REDIS_HOST, port = config.BaseConfig.REDIS_PORT)
+image_cache = Redis(host = config.BaseConfig.IMAGE_CACHE_HOST, port = config.BaseConfig.IMAGE_CACHE_PORT)
+meta_cache = Redis(host = config.BaseConfig.META_CACHE_HOST, port = config.BaseConfig.META_CACHE_PORT)
 
 # Import the Keras stuff which is really time taking
 logging.warning("Loading Keras modules...")
@@ -37,36 +38,21 @@ def get_breed(image_file):
     return breed
 
 
-# A temprary solution to sift through images only, should be the same as the one in puppifier_worker
-IMAGE_CACHE_PREFIX = 'puppifier_'
-IMAGE_CACHE_SUFFIX = '_breed'
-
-def is_valid_key(key):
-    '''checks if the key is for an image and meet the criteria''' 
-    prefix_len = len(IMAGE_CACHE_PREFIX)
-    return (type(key) is str
-            and len(key) >= prefix_len 
-            and key[:prefix_len] == IMAGE_CACHE_PREFIX 
-            and (len(key) < len(IMAGE_CACHE_SUFFIX) 
-                 or len(key) >= len(IMAGE_CACHE_SUFFIX) 
-                 and  key[-len(IMAGE_CACHE_SUFFIX):] != IMAGE_CACHE_SUFFIX))
-
 while True: 
     try: 
         keys = image_cache.scan()[1]
-        #logging.warning("key scan = " + str(keys))
+        logging.warning("key scan = " + str(keys))
         for binary_key in keys:
-            str_key = binary_key.decode()
-            if is_valid_key(str_key):
-                key_for_result = str_key + IMAGE_CACHE_SUFFIX
-                if not image_cache.get(key_for_result):  
-                    image = pickle.loads(image_cache.get(str_key))
-                    breed = get_breed(image)
-                    image_cache.set(key_for_result,  breed)
-                    logging.warning("key = {}, breed = {}".format(key_for_result, breed))
+            key = binary_key.decode()
+            if not meta_cache.exists(key):  
+                image = pickle.loads(image_cache.get(key))
+                breed = get_breed(image)
+                #breed = "Groundhog"
+                meta_cache.set(key,  breed)
+                logging.warning("key = {}, breed = {}".format(key, breed))
     except Exception as e: 
         logging.error(traceback.print_exc())
-    time.sleep(0.4)
+    time.sleep(5)
     
     
     
