@@ -9,7 +9,6 @@ import numpy as np
 from glob import glob 
 from PIL import Image           
 
-
 # load train, test, and validation datasets
 script_dirname, script_filename = os.path.split(os.path.abspath(__file__))
 path_to_data = os.path.join(script_dirname, '../data')

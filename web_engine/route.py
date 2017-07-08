@@ -15,12 +15,15 @@ from flask import render_template, request, redirect, url_for, send_from_directo
 from werkzeug import secure_filename
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-#UPLOAD_FOLDER = 'web_engine/uploads/'
-UPLOAD_FOLDER = '/tmp/uploads'
 
 app.config.from_object(BaseConfig)
 
 redis = Redis(host = app.config['REDIS_HOST'], port = app.config['REDIS_PORT'])
+image_cache = redis
+# A temprary solution to sift through images only, should be the same as the one in puppifier_worker
+IMAGE_CACHE_PREFIX = 'puppifier_'
+IMAGE_CACHE_SUFFIX = '_breed'
+
 
 def site_analytics():
     '''
@@ -40,16 +43,6 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-# This route will show a form to perform an AJAX request
-# jQuery is loaded to execute the request and update the
-# value of the operation
-@app.route('/home2')
-def home2():
-    site_analytics()
-
-    return render_template('first_page.html', 
-                           visit_number = redis.get('hits').decode(),
-                           since = redis.get('first_visit_day').decode())
 
 # Route that will process the file upload
 @app.route('/', methods=['GET', 'POST'])
@@ -66,15 +59,16 @@ def home():
             return render_template('error.html', message = error_message)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            filename = IMAGE_CACHE_PREFIX + filename
             # Store the image into the cache. To do so, we need to pickle the saved image. 
             # Otherwise, the image can not be retrieved from Redis
             output = io.BytesIO() 
             file.save(output)
             output.seek(0)
-            redis.set(filename, pickle.dumps(output))
+            image_cache.set(filename, pickle.dumps(output))
             output.close()
             # This is how to retrieve the image:  
-            #file_object = pickle.loads(redis.get(filename))
+            #file_object = pickle.loads(image_cache.get(filename))
             #return send_file(file_object, mimetype='image/' + filename.split('.')[-1]) 
             return redirect(url_for('upload_page', filename = filename))
         else:
@@ -92,25 +86,28 @@ def send_file_from_cache(filename):
     '''
     Send a file from the cache such as redis.
     '''
-    file_extension = filename.split('.')[-1] 
-    if redis.get(filename) and file_extension in ALLOWED_EXTENSIONS: 
-        file_object = pickle.loads(redis.get(filename))
+    file_extension = filename.split('.')[-1].lower() 
+    if image_cache.get(filename) and allowed_file(filename): 
+        file_object = pickle.loads(image_cache.get(filename))
         mimetype = 'image/' + file_extension
         return send_file(file_object, mimetype = mimetype)
 
 @app.route('/dogs/<breed_name>/<index>')
 def send_dog_file(breed_name, index):
-    from .src.face_recognizer import dog_files_for_breed
+    from web_engine.src.image_utils import dog_files_for_breed
     paths, files = dog_files_for_breed(breed_name)
     return send_from_directory(paths[int(index) % len(paths)], files[int(index) % len(files)]) 
 
 
 @app.route('/upload/<filename>', methods=['GET', 'POST'])
 def upload_page(filename):
-    from .src.face_recognizer import face_detector
-    nr_human = face_detector(pickle.loads(redis.get(filename)))
+    from web_engine.src.image_utils import face_detector
+    try:
+        nr_human = face_detector(pickle.loads(image_cache.get(filename)))
+    except: 
+        nr_human = -1
 
-    message = "We recognized {} human face{} in the picture you uploaded.".format(nr_human, 's' if nr_human > 1 else '')
+    message = "We recognized <b>{}</b> human face{} in the picture you uploaded{}".format(nr_human, 's' if nr_human > 1 else '', ' !!!' if nr_human < 0 else '.')
     if request.method == 'POST': 
         return redirect(url_for('result_page', filename = filename))
     return render_template('upload_page.html', image = filename, msg = message)
@@ -138,12 +135,21 @@ def result_page(filename):
     elif is_dog: 
         message = 'The breed of dog in the picture is "{}"'.format(breed.replace('_', ' '))
     '''
-    breed = "Belgian_sheepdog"
-    message = "This page is still beta. The test breed is " + breed
+    # After determining the breed, let the image expire after 1 min
+    breed = None 
+    if image_cache.exists(filename + IMAGE_CACHE_SUFFIX): 
+        image_cache.expire(filename, 60)
+        breed = image_cache.get(filename + IMAGE_CACHE_SUFFIX).decode()
+        message = "Hey! We think you resemble the <b> {} </b> breed!".format(breed.replace('_', ' '))
+        return render_template('result_page.html', image = filename, msg = message, breed_name = breed)
+    else: 
+        message = "Sorry, our workers are very busy now. We are trying to find the best breed resemblance for you, but it seems we are too slow. Please go back and try again."
+        return render_template('error.html', message = message)
 
-    return render_template('result_page.html', image = filename, msg = message, breed_name = breed)
 
-    
+
+
+
 
 
 
