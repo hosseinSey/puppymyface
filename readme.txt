@@ -33,15 +33,22 @@ After creating the docker registry repo, go to the [ECS page](https://console.aw
  - Make sure your current directory is the root of this repo.
  - Build your Docker image using the following command. For information on building a Docker file from scratch see the instructions here. You can skip this step if your image is already built:
    `docker build -t puppymyface ./web_engine/'
+	 `docker build -t cnn_puppier ./puppier/`
  - After the build completes, tag your image so you can push the image to this repository:
    `docker tag puppymyface:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest`
+	 `docker tag cnn_puppier:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`
  - Run the following command to push this image to your newly created AWS repository:
    `docker push 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest`
+	 `docker push 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`
  - Pull the image on the EC2 instance machine.
    `docker pull 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface`
+	 `docker pull 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`
  - create a `docker-compose.yml` file and put the image name into that file
 
 
 
 docker build -t temdy/puppyfaceimage ./web_engine/
 docker push temdy/puppyfaceimage
+
+## Image processing:
+A tutorial on [serving generated images from memory](https://fadeit.dk/blog/2015/04/30/python3-flask-pil-in-memory-image/).

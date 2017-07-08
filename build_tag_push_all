@@ -1,0 +1,6 @@
+docker build -t puppymyface ./web_engine/
+docker build -t cnn_puppier ./puppier/
+docker tag puppymyface:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest
+docker tag cnn_puppier:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest
+docker push 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest
+docker push 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest

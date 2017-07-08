@@ -1,0 +1,26 @@
+# this is substitute for the long and tedious "docker run [millions of options]" command
+version: '2'
+services:
+    web:
+        container_name: web_engine
+        image: 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest
+        ports:
+          - "80:5000"
+          - "443:443"
+        environment:
+          - SECRET_KEY=267dd22d-e1c1-4105-872e-61d7ca747f2c
+          - DEBUG=True
+          - REDIS_HOST=redis
+          - REDIS_PORT=6379
+    worker:
+        container_name: puppier
+        image: 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest
+        environment:
+          - SECRET_KEY=267dd22d-e1c1-4105-872e-61d7ca747f2c
+          - DEBUG=True
+          - REDIS_HOST=redis
+          - REDIS_PORT=6379
+    redis:
+        container_name: cache
+        image: redis
+        
