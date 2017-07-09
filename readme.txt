@@ -38,18 +38,36 @@ After creating the docker registry repo, go to the [ECS page](https://console.aw
  - After the build completes, tag your image so you can push the image to this repository:
    `docker tag puppymyface:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest`
 	 `docker tag cnn_puppier:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`
+	 `docker tag blob_cache:latest temdy/blob_cache:latest`
  - Run the following command to push this image to your newly created AWS repository:
    `docker push 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest`
 	 `docker push 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`
+	 `docker push temdy/blob_cache:latest`
  - Pull the image on the EC2 instance machine.
    `docker pull 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface`
 	 `docker pull 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`
+	 `docker pull temdy/blob_cache:latest`
  - create a `docker-compose.yml` file and put the image name into that file
 
 
-
-docker build -t temdy/puppyfaceimage ./web_engine/
-docker push temdy/puppyfaceimage
-
 ## Image processing:
 A tutorial on [serving generated images from memory](https://fadeit.dk/blog/2015/04/30/python3-flask-pil-in-memory-image/).
+
+## URL Set Up:
+### DNS
+It is better to user the Amazon DNS (a.k.a. Route53) instead of the GoDaddy's. To do so:
+Create a new hosted zone in AWS Route53 for the website (pairool.com).
+Copy the name servers (NS) to GoDaddy's DNS Manager.
+
+
+### SSL and HTTPS
+#### Upload SSL certificates to AWS
+First, issue the CSR file for the full address www.example.com not the naked address (example.com).
+http://markshust.com/2014/04/13/install-godaddy-ssl-certificate-aws-elb
+
+https://stackoverflow.com/questions/991758/how-to-get-pem-file-from-key-and-crt-files
+aws iam upload-server-certificate --server-certificate-name www.puppymyface.com --certificate-body file://server.crt --private-key file://server.key --certificate-chain file://gd_bundle-g2-g1.crt
+
+### Forced HTTPS:
+Want to redirect the traffic from HTTP to HTTPS? Graham Dumpleton has a good Q/A thread with topic [can mod_wsgi-express be used with RewriteRule in the included config?](https://groups.google.com/forum/#!topic/modwsgi/dt2i2syT4uk)
+If you google "[How to Force HTTPS Behind AWS ELB](https://www.allcloud.io/how-to/how-to-force-https-behind-aws-elb/)", there are instructions on how to set up the redirection for the Apache

@@ -1,4 +1,5 @@
-dogImagesTest/
+docker-stack.yml
+dogImagesTrain/
 ssl-certs/
 uploads/
 docker-compose.yml

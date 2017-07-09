@@ -41,18 +41,19 @@ def get_breed(image_file):
 while True: 
     try: 
         keys = image_cache.scan()[1]
-        logging.warning("key scan = " + str(keys))
+        #logging.warning("key scan = " + str(keys))
         for binary_key in keys:
             key = binary_key.decode()
             if not meta_cache.exists(key):  
                 image = pickle.loads(image_cache.get(key))
+                logging.warning("Start forward passing image through conv network...")
                 breed = get_breed(image)
-                #breed = "Groundhog"
-                meta_cache.set(key,  breed)
+                logging.warning("CNN finished the job...")
+                meta_cache.set(key, breed)
                 logging.warning("key = {}, breed = {}".format(key, breed))
     except Exception as e: 
         logging.error(traceback.print_exc())
-    time.sleep(5)
+    #time.sleep(1)
     
     
     
