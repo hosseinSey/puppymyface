@@ -1,11 +1,11 @@
-#docker build -t puppymyface ./web_engine/
+docker build -t puppymyface ./web_engine/
 docker build -t cnn_puppier ./puppier/
 #docker build -t blob_cache -f ./redis_containers/dockerfile_blob_redis ./redis_containers/
 
-#docker tag puppymyface:latest temdy/puppymyface:latest
+docker tag puppymyface:latest temdy/puppymyface:latest
 docker tag cnn_puppier:latest temdy/cnn_puppier:latest
 #docker tag blob_cache:latest temdy/blob_cache:latest
 
-#docker push temdy/puppymyface:latest
+docker push temdy/puppymyface:latest
 docker push temdy/cnn_puppier:latest
 #docker push temdy/blob_cache:latest 

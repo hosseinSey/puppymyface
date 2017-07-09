@@ -11,7 +11,7 @@ import os
 from time import localtime, strftime
 from redis import Redis 
 from .config import BaseConfig
-from flask import render_template, request, redirect, url_for, send_from_directory, send_file
+from flask import render_template, request, redirect, url_for, send_from_directory, send_file, session
 from werkzeug import secure_filename
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -98,13 +98,28 @@ def send_dog_file(breed_name, index):
 
 @app.route('/upload/<filename>', methods=['GET', 'POST'])
 def upload_page(filename):
-    from web_engine.src.image_utils import face_detector
+    
+    '''
+    import signal 
+    def signal_handler(signum, frame):
+        raise Exception("Timed out!")
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(0.1)   # seconds
+    '''
     try:
-        nr_human = face_detector(pickle.loads(image_cache.get(filename)))
+        '''
+        You really shouldn't be doing computationally expensive operations in the web server
+        '''
+        #from web_engine.src.image_utils import face_detector
+        #nr_human = face_detector(pickle.loads(image_cache.get(filename)))
+        nr_human = -2
     except: 
         nr_human = -1
 
-    message = "We recognized <b>{}</b> human face{} in the picture you uploaded{}".format(nr_human, 's' if nr_human > 1 else '', ' !!!' if nr_human < 0 else '.')
+    if nr_human >= 0 : 
+        message = "We recognized <b>{}</b> human face{} in the picture you uploaded{}".format(nr_human, 's' if nr_human > 1 else '', ' !!!' if nr_human < 0 else '.')
+    else: 
+        message = "We are blind, and we don't know if there is any human faces in your picture! <br>Our workers could not process your picture in a reasonable time."
     if request.method == 'POST': 
         return redirect(url_for('result_page', filename = filename))
     return render_template('upload_page.html', image = filename, msg = message)

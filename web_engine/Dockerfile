@@ -49,6 +49,17 @@ WORKDIR /var/www
 # make certificates accessible only by the root user
 RUN chmod 600 web_engine/ssl-certs/*
 
+# For header buffer size, see this post: https://stackoverflow.com/a/24844743/7014331
+#  --header-buffer-size 65536 \
+#  --log-level info \
+#--body-min-rate BYTES
+#                        The number of bytes required to be sent as part of the
+#                        request body to trigger a dynamic increase in the
+#                        timeout on receiving the request body. Each time this
+#                        number of bytes is received the timeout will be
+#                        increased by 1 second up to any maximum specified by
+#                        the maximum body timeout. Defaults to 500 bytes.
+
 CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --user www-data --group www-data \
   --port=5000 \
@@ -56,7 +67,9 @@ CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --log-to-terminal \
   --startup-log \
   --locale C.UTF-8 \
-  --server-root=/etc/mod_wsgi-express-80
+  --server-root=/etc/mod_wsgi-express-80 \
+  --rewrite-rules web_engine/rewrite.conf
+  
 #  --https-port 443 \
 #  --server-name www.puppymyface.com \
 #  --server-alias puppymyface.com \
