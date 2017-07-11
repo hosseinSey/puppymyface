@@ -10,6 +10,7 @@ import logging
 import time
 import traceback
 import pickle
+from src.file_utils import get_file_properties, set_file_properties
 #from recognizer import dog_names
 
 image_cache = Redis(host = config.BaseConfig.IMAGE_CACHE_HOST, port = config.BaseConfig.IMAGE_CACHE_PORT)
@@ -44,12 +45,13 @@ while True:
         #logging.warning("key scan = " + str(keys))
         for binary_key in keys:
             key = binary_key.decode()
-            if not meta_cache.exists(key):  
+            # check if the file 'key' has been processed before
+            if not get_file_properties(meta_cache, key, 'breed'):  
                 image = pickle.loads(image_cache.get(key))
                 logging.warning("Start forward passing image through conv network...")
                 breed = get_breed(image)
                 logging.warning("CNN finished the job...")
-                meta_cache.set(key, breed)
+                set_file_properties(meta_cache, key, breed = breed)
                 logging.warning("key = {}, breed = {}".format(key, breed))
     except Exception as e: 
         logging.error(traceback.print_exc())

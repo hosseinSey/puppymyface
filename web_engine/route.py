@@ -7,14 +7,19 @@ if __name__ == '__main__':
 
 import io
 import pickle            
-import os
-from time import localtime, strftime
+import json            
+from time import localtime, strftime, time
 from redis import Redis 
 from .config import BaseConfig
 from flask import render_template, request, redirect, url_for, send_from_directory, send_file, session
 from werkzeug import secure_filename
+from .src.file_utils import get_file_properties, set_file_properties
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+KEY_SESSION_ID_COUNT = 'last_session_id'
+MAX_SESSION_COUNT = 2**16
+SESSION_ID_KEY = 'id'
 
 app.config.from_object(BaseConfig)
 
@@ -22,6 +27,47 @@ app.config.from_object(BaseConfig)
 meta_cache = Redis(host = app.config['META_CACHE_HOST'], port = app.config['META_CACHE_PORT'])
 # Cache for blobs such as images
 image_cache = Redis(host = app.config['IMAGE_CACHE_HOST'], port = app.config['IMAGE_CACHE_PORT'])
+
+if not meta_cache.exists(KEY_SESSION_ID_COUNT): 
+    meta_cache.set(KEY_SESSION_ID_COUNT, 0)
+
+def get_time_ms():
+    return str(time()).replace('.', '')
+
+def get_or_creat_session():
+    '''
+    Create a session. The session ID would be the current epoch + a counter to keep the sessions
+    
+    return 
+        :str a session id 
+    '''
+    if SESSION_ID_KEY in session:
+        return session[SESSION_ID_KEY]
+    else: 
+        meta_cache.incr(KEY_SESSION_ID_COUNT)
+        if int(meta_cache.get(KEY_SESSION_ID_COUNT).decode()) > MAX_SESSION_COUNT:
+            meta_cache.set(KEY_SESSION_ID_COUNT, 0) 
+        session_id = get_time_ms() +  meta_cache.get(KEY_SESSION_ID_COUNT).decode()
+        session[SESSION_ID_KEY] = session_id
+        return session[SESSION_ID_KEY]
+    
+
+def get_breed_from_cache(filename):
+    if meta_cache.exists(filename): 
+        #exprie the file 
+        if image_cache.exists(filename):
+            image_cache.expire(filename, 2 * 60)
+        return get_file_properties(meta_cache, filename, 'breed')
+
+def is_image_expired(filename):
+    '''
+    Check the cache to see if the image has been expired.
+    Expiration happens when file exists in the meta_cache but not in image_cache
+    '''
+    # TODO: implement this in proper way!
+    if filename not in image_cache: 
+        return True
+    return False
 
 def site_analytics():
     '''
@@ -55,14 +101,19 @@ def home():
             return render_template('error.html', message = error_message)
         # Save file in the Cache
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
+            session_id = get_or_creat_session()
+            filename = get_time_ms() + '_' + secure_filename(file.filename)
             # Save image into a BytesIO object which acts as a file
             file_object = io.BytesIO() 
             file.save(file_object)
             file_object.seek(0)
             # Pickle the object to save in the cache:
-            image_cache.set(filename, pickle.dumps(file_object))
+            file_pickled = pickle.dumps(file_object)
+            image_cache.set(filename, file_pickled)
             file_object.close()
+            # set the file properties:
+            set_file_properties(meta_cache, filename, session_id = session_id) 
+            
             # This is how to retrieve the image:  
             #file_object = pickle.loads(image_cache.get(filename))
             return redirect(url_for('upload_page', filename = filename))
@@ -81,6 +132,9 @@ def send_file_from_cache(filename):
     '''
     Send a file from the cache such as redis.
     '''
+    if is_image_expired(filename): 
+        return send_from_directory('static/images', 'icons-Expired.png')
+    
     if image_cache.get(filename) and allowed_file(filename): 
         file_object = pickle.loads(image_cache.get(filename))
         file_extension = filename.split('.')[-1].lower() 
@@ -128,23 +182,13 @@ def upload_page(filename):
 @app.route('/result/<filename>')
 def result_page(filename):
     # After determining the breed, let the image expire after 1 min
-    breed = None 
+    breed = get_breed_from_cache(filename) 
     # if the results are back: 
-    if meta_cache.exists(filename): 
-        if image_cache.exists(filename):
-            image_cache.expire(filename, 5 * 60)
-        breed = meta_cache.get(filename).decode()
+    if breed :
         message = "Hey! We think you resemble the <b> {} </b> breed!".format(breed.replace('_', ' '))
-        return render_template('result_page.html', image = filename, msg = message, breed_name = breed)
     else: 
-        message = "Sorry, our workers are very busy now. We are trying to find the best breed resemblance for you, but it seems we are too slow. Please go back and try again."
-        return render_template('error.html', message = message)
-
-
-
-
-
-
+        message = "We are trying to find the best breed resemblance for you, but it seems our workers are too slow. <br> <br> Please refresh this page again in a few seconds."
+    return render_template('result_page.html', image = filename, msg = message, breed_name = breed)
 
 
 if __name__ == '__main__':

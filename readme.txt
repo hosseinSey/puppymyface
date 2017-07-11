@@ -34,10 +34,12 @@ After creating the docker registry repo, go to the [ECS page](https://console.aw
  - Build your Docker image using the following command. For information on building a Docker file from scratch see the instructions here. You can skip this step if your image is already built:
    `docker build -t puppymyface ./web_engine/'
 	 `docker build -t cnn_puppier ./puppier/`
+	 `docker build -t cv2_face_recognizer ./puppier/`
 	 `docker build -t blob_cache -f ./redis_containers/dockerfile_blob_redis ./redis_containers/`
  - After the build completes, tag your image so you can push the image to this repository:
    `docker tag puppymyface:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest`
 	 `docker tag cnn_puppier:latest 345806756162.dkr.ecr.us-east-1.amazonaws.com/cnn_puppier:latest`
+	 `docker tag cv2_face_recognizer temdy/cv2_face_recognizer:latest`
 	 `docker tag blob_cache:latest temdy/blob_cache:latest`
  - Run the following command to push this image to your newly created AWS repository:
    `docker push 345806756162.dkr.ecr.us-east-1.amazonaws.com/puppymyface:latest`

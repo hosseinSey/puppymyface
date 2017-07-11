@@ -67,8 +67,8 @@ CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --log-to-terminal \
   --startup-log \
   --locale C.UTF-8 \
-  --server-root=/etc/mod_wsgi-express-80 \
-  --rewrite-rules web_engine/rewrite.conf
+#  --rewrite-rules web_engine/rewrite.conf \
+  --server-root=/etc/mod_wsgi-express-80
   
 #  --https-port 443 \
 #  --server-name www.puppymyface.com \
