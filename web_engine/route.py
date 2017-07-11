@@ -91,6 +91,7 @@ def allowed_file(filename):
 # Route that will process the file upload
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    session_id = get_or_creat_session()
     if request.method == 'POST':
         # Check for input errors: 
         if 'file' not in request.files:
@@ -101,7 +102,6 @@ def home():
             return render_template('error.html', message = error_message)
         # Save file in the Cache
         if file and allowed_file(file.filename):
-            session_id = get_or_creat_session()
             filename = get_time_ms() + '_' + secure_filename(file.filename)
             # Save image into a BytesIO object which acts as a file
             file_object = io.BytesIO() 
@@ -113,6 +113,8 @@ def home():
             file_object.close()
             # set the file properties:
             set_file_properties(meta_cache, filename, session_id = session_id) 
+            if request.form.get('private_to_device'):
+                set_file_properties(meta_cache, filename, private_to_device = 'True')
             
             # This is how to retrieve the image:  
             #file_object = pickle.loads(image_cache.get(filename))
@@ -134,7 +136,10 @@ def send_file_from_cache(filename):
     '''
     if is_image_expired(filename): 
         return send_from_directory('static/images', 'icons-Expired.png')
-    
+    privacy = get_file_properties(meta_cache, filename, 'private_to_device')
+    if privacy: 
+        if privacy == 'True' and session[SESSION_ID_KEY] != get_file_properties(meta_cache, filename, 'session_id'):
+            return send_from_directory('static/images', 'access_denied.gif')
     if image_cache.get(filename) and allowed_file(filename): 
         file_object = pickle.loads(image_cache.get(filename))
         file_extension = filename.split('.')[-1].lower() 
