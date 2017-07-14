@@ -20,6 +20,7 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 KEY_SESSION_ID_COUNT = 'last_session_id'
 MAX_SESSION_COUNT = 2**16
 SESSION_ID_KEY = 'id'
+EXPIRE_AFTER_MINS = 60  # expire the uploaded image after this many minutes
 
 app.config.from_object(BaseConfig)
 
@@ -111,6 +112,8 @@ def home():
             file_pickled = pickle.dumps(file_object)
             image_cache.set(filename, file_pickled)
             file_object.close()
+            # set an expiration time for the image:
+            image_cache.expire(filename, EXPIRE_AFTER_MINS * 60) 
             # set the file properties:
             set_file_properties(meta_cache, filename, session_id = session_id) 
             if request.form.get('private_to_device'):
@@ -124,9 +127,7 @@ def home():
             return render_template('error.html', message = error_message)
     else: 
         site_analytics()
-        return render_template('first_page.html', 
-                           visit_number = meta_cache.get('hits').decode(),
-                           since = meta_cache.get('first_visit_day').decode())
+        return render_template('first_page.html')
     
 
 @app.route('/files/<filename>')
@@ -186,7 +187,6 @@ def upload_page(filename):
 
 @app.route('/result/<filename>')
 def result_page(filename):
-    # After determining the breed, let the image expire after 1 min
     breed = get_breed_from_cache(filename) 
     # if the results are back: 
     if breed :
@@ -194,6 +194,26 @@ def result_page(filename):
     else: 
         message = "We are trying to find the best breed resemblance for you, but it seems our workers are too slow. <br> <br> Please refresh this page again in a few seconds."
     return render_template('result_page.html', image = filename, msg = message, breed_name = breed)
+
+
+@app.route('/qz-1e-0e-9d-ae-81J-c1-bb-8d-e8-88q-81')
+def clear():
+    meta_cache.flushall()
+    image_cache.flushall()
+    return "All data in the cache flushed out!"
+
+
+@app.route('/about')
+def about_page():
+    #count the number of times an image is puppied
+    count = 0
+    return render_template('about.html', 
+                       visit_number = meta_cache.get('hits').decode(),
+                       since = meta_cache.get('first_visit_day').decode())
+
+@app.route('/privacy_policy')
+def privacy_policy_page():
+    return ''
 
 
 if __name__ == '__main__':

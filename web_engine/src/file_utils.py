@@ -53,7 +53,7 @@ def get_file_properties(cache: Redis, key: str, property_name):
         file_properties = json.loads(file_properties_json)          
     except: 
         # TODO: handle the exception
-        raise
+        return
     if property_name in file_properties: 
         return file_properties[property_name]
         
