@@ -155,6 +155,16 @@ def send_dog_file(breed_name, index):
         return send_from_directory(paths[int(index) % len(paths)], files[int(index) % len(files)])
     return '' 
 
+@app.route('/static/<filename>')
+def get_static_file(filename):
+    file_path = {'ladda-themeless.min.css': 'static/dist/', 
+                    'spin.min.js': 'static/dist/', 
+                    'ladda.min.js': 'static/dist/'}
+    if filename in file_path: 
+        return send_from_directory(file_path[filename], filename)
+    else: 
+        raise Exception("File not in list.")
+
 
 @app.route('/upload/<filename>', methods=['GET', 'POST'])
 def upload_page(filename):
@@ -202,7 +212,7 @@ def clear():
     image_cache.flushall()
     return "All data in the cache flushed out!"
 
-@app.route('/is_job_finished', methods=['POST'])
+@app.route('/job_stat', methods=['POST'])
 def is_recognized():
     '''
     Checks if the dog breed for the image for filename is recognized

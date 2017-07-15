@@ -6,34 +6,38 @@
 	</div> 
 	<br /> 
 
-	<script>
-		function wait_for_server(submitBtnId, helpMsgId) {
-		    $(submitBtnId).text('Loading...');
-		    $(helpMsgId).text("This might take a few seconds...");
-		    $.post('/is_job_finished', {
-		        filename: '{{image}}'
-		    }).done(function(response) {
-		    	if (response.status === 'done') { 
-				    $(submitBtnId).text('Puppy Me!');
-				    $(helpMsgId).text("");
-				    window.location = "{{url_for('result_page', filename = image)}}";
-		    	} else {
-		    		setInterval(wait_for_server(submitBtnId), 400)
-		    	}
-		    }).fail(function() {
-		        $(submitBtnId).text('Error: Could not contact server.');
-		    });
-		}
-	</script>
+	<!-- {# Ladda for Bootstrap: http://msurguy.github.io/ladda-bootstrap/  #} -->
+	<link rel="stylesheet" href="{{ url_for('get_static_file', filename = 'ladda-themeless.min.css') }}">
+	<script src="{{ url_for('get_static_file', filename = 'spin.min.js') }}"></script>
+	<script src="{{ url_for('get_static_file', filename = 'ladda.min.js') }}"></script>
 	
-		
+	<script>
+		$(function() {
+			$('#form-submit').click(function(e){
+			 	var l = Ladda.create(this);
+			 	l.start();
+			 	function post_and_wait(){
+				 	$.post("{{ url_for('is_recognized') }}", 
+				 	    { filename: '{{image}}' }
+				 	).done(function(response){
+				    	if (response.status === 'done') { 
+				    		l.stop();
+						    window.location = "{{url_for('result_page', filename = image)}}";
+				    	} else {
+				    		setInterval(post_and_wait(), 400)
+				    	}
+					  });
+			 	}
+			 	post_and_wait();
+			});
+		});	
+	</script>
+			
 	<div class="row">
 		<div class="col-sm-12">
 		    <p class="help-block">{{ msg | safe }}</p>
 		    <br />
-		    <a class="btn btn-primary btn-lg" href="javascript:wait_for_server('#puppy_me_button', '#help_message')">
-			    <span id='puppy_me_button'> Puppy Me! </span>
-		    </a>
+		    <a id="form-submit" class="btn btn-primary btn-lg ladda-button" data-style="zoom-in" data-size="l"><span class="ladda-label">Puppy Me!</span></a>
 		    <p class="help-block" id="help_message"></p>
 		</div>
 	</div>
