@@ -12,6 +12,7 @@ from time import localtime, strftime, time
 from redis import Redis 
 from .config import BaseConfig
 from flask import render_template, request, redirect, url_for, send_from_directory, send_file, session
+from flask import jsonify
 from werkzeug import secure_filename
 from .src.file_utils import get_file_properties, set_file_properties
 
@@ -116,8 +117,7 @@ def home():
             image_cache.expire(filename, EXPIRE_AFTER_MINS * 60) 
             # set the file properties:
             set_file_properties(meta_cache, filename, session_id = session_id) 
-            if request.form.get('private_to_device'):
-                set_file_properties(meta_cache, filename, private_to_device = 'True')
+            set_file_properties(meta_cache, filename, private_to_device = 'True')
             
             # This is how to retrieve the image:  
             #file_object = pickle.loads(image_cache.get(filename))
@@ -202,11 +202,28 @@ def clear():
     image_cache.flushall()
     return "All data in the cache flushed out!"
 
+@app.route('/is_job_finished', methods=['POST'])
+def is_recognized():
+    '''
+    Checks if the dog breed for the image for filename is recognized
+    input: 
+        :filename str name of the file
+    output: 
+        :json {status: done/processing/error}
+    '''
+    if request.method == 'POST':
+        filename = request.form['filename']
+        if meta_cache.exists(filename): 
+            breed = get_file_properties(meta_cache, filename, 'breed')
+            if breed: 
+                return jsonify({'status' : 'done'})
+            else: 
+                return jsonify({'status' : 'processing'})
+        return jsonify({'status' : 'error'})
 
 @app.route('/about')
 def about_page():
     #count the number of times an image is puppied
-    count = 0
     return render_template('about.html', 
                        visit_number = meta_cache.get('hits').decode(),
                        since = meta_cache.get('first_visit_day').decode())

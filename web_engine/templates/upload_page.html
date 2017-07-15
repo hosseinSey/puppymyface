@@ -5,18 +5,38 @@
 		<img src="{{ url_for('send_file_from_cache', filename=image) }}" alt={{ image }} class="img-responsive img-thumbnail"  style="max-width: 65%">
 	</div> 
 	<br /> 
+
+	<script>
+		function wait_for_server(submitBtnId, helpMsgId) {
+		    $(submitBtnId).text('Loading...');
+		    $(helpMsgId).text("This might take a few seconds...");
+		    $.post('/is_job_finished', {
+		        filename: '{{image}}'
+		    }).done(function(response) {
+		    	if (response.status === 'done') { 
+				    $(submitBtnId).text('Puppy Me!');
+				    $(helpMsgId).text("");
+				    window.location = "{{url_for('result_page', filename = image)}}";
+		    	} else {
+		    		setInterval(wait_for_server(submitBtnId), 400)
+		    	}
+		    }).fail(function() {
+		        $(submitBtnId).text('Error: Could not contact server.');
+		    });
+		}
+	</script>
+	
 		
-	<form class="form-horizontal"  method="post">
-		<div class="row" style="margin-left:2px; margin-right:2px;">
-			<div class="col-sm-12">
-				<div class="input-group input-group-lg">
-				    <p class="help-block">{{ msg | safe }}</p>
-				    <br />
-					<input type="submit" class="btn btn-primary btn-lg" value="Puppy Me!">
-				</div>
-			</div>
+	<div class="row">
+		<div class="col-sm-12">
+		    <p class="help-block">{{ msg | safe }}</p>
+		    <br />
+		    <a class="btn btn-primary btn-lg" href="javascript:wait_for_server('#puppy_me_button', '#help_message')">
+			    <span id='puppy_me_button'> Puppy Me! </span>
+		    </a>
+		    <p class="help-block" id="help_message"></p>
 		</div>
-	</form>
+	</div>
 	
 
 {% endblock %} 
