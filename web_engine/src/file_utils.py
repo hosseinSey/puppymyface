@@ -1,7 +1,7 @@
 import json            
 from redis import Redis 
 
-ALLOWED_FILE_PROPERTIES = set(['session_id', 'breed', 'private_to_device'])
+ALLOWED_FILE_PROPERTIES = set(['session_id', 'breed', 'private_to_device', 'nrof_human_faces'])
 
 def set_file_properties(cache: Redis, key: str, **kwarg):
     '''

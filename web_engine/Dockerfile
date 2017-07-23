@@ -17,7 +17,7 @@ RUN apt-get update
 RUN apt-get install -y \
     apache2 \
 	apache2-dev \
-    vim less\
+    vim less git-all\
   && apt-get clean \
   && apt-get autoremove \
   && rm -rf /var/lib/apt/lists/*
@@ -39,26 +39,19 @@ RUN chmod 777 /tmp/uploads
 # If you are using the --https-only option for Apache,
 # use --https-port 443 and expose 443 for https. Otherwise, there
 # will be a mix up in the forwarding. 
-EXPOSE 5000 443
+EXPOSE 5000
 
 #copy the entire application 
 ADD . /var/www/web_engine
 
 WORKDIR /var/www
 
+# download and add libraries and utilities   
+RUN git clone https://github.com/TeMedy/home_made_utils.git 
+RUN cp home_made_utils/file_utils.py /var/www/web_engine/src/
+
 # make certificates accessible only by the root user
 RUN chmod 600 web_engine/ssl-certs/*
-
-# For header buffer size, see this post: https://stackoverflow.com/a/24844743/7014331
-#  --header-buffer-size 65536 \
-#  --log-level info \
-#--body-min-rate BYTES
-#                        The number of bytes required to be sent as part of the
-#                        request body to trigger a dynamic increase in the
-#                        timeout on receiving the request body. Each time this
-#                        number of bytes is received the timeout will be
-#                        increased by 1 second up to any maximum specified by
-#                        the maximum body timeout. Defaults to 500 bytes.
 
 CMD mod_wsgi-express start-server web_engine/wsgi.py \
   --user www-data --group www-data \

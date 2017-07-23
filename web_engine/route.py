@@ -5,15 +5,15 @@ if __name__ == '__main__':
     from flask import Flask
     app = Flask('web_engine') #app = Flask('web_engine')
 
-import io
+import io, logging
 import pickle            
-import json            
 from time import localtime, strftime, time
 from redis import Redis 
 from .config import BaseConfig
 from flask import render_template, request, redirect, url_for, send_from_directory, send_file, session
 from flask import jsonify
 from werkzeug import secure_filename
+#the file utils will be added while building by Docker (see the Dockerfile)
 from .src.file_utils import get_file_properties, set_file_properties
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -149,7 +149,7 @@ def send_file_from_cache(filename):
 
 @app.route('/dogs/<breed_name>/<index>')
 def send_dog_file(breed_name, index):
-    from web_engine.src.image_utils import dog_files_for_breed
+    from web_engine.src.data_utils import dog_files_for_breed
     paths, files = dog_files_for_breed(breed_name)
     if files: 
         return send_from_directory(paths[int(index) % len(paths)], files[int(index) % len(files)])
@@ -159,7 +159,9 @@ def send_dog_file(breed_name, index):
 def get_static_file(filename):
     file_path = {'ladda-themeless.min.css': 'static/dist/', 
                     'spin.min.js': 'static/dist/', 
-                    'ladda.min.js': 'static/dist/'}
+                    'ladda.min.js': 'static/dist/', 
+                    'loading.gif': 'static/images/', 
+                    }
     if filename in file_path: 
         return send_from_directory(file_path[filename], filename)
     else: 
@@ -168,31 +170,9 @@ def get_static_file(filename):
 
 @app.route('/upload/<filename>', methods=['GET', 'POST'])
 def upload_page(filename):
-    
-    '''
-    import signal 
-    def signal_handler(signum, frame):
-        raise Exception("Timed out!")
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(0.1)   # seconds
-    '''
-    try:
-        '''
-        You really shouldn't be doing computationally expensive operations in the web server
-        '''
-        #from web_engine.src.image_utils import face_detector
-        #nr_human = face_detector(pickle.loads(image_cache.get(filename)))
-        nr_human = -2
-    except: 
-        nr_human = -1
-
-    if nr_human >= 0 : 
-        message = "We recognized <b>{}</b> human face{} in the picture you uploaded{}".format(nr_human, 's' if nr_human > 1 else '', ' !!!' if nr_human < 0 else '.')
-    else: 
-        message = "We are blind, and we don't know if there is any human faces in your picture! <br>Our workers could not process your picture in a reasonable time."
     if request.method == 'POST': 
         return redirect(url_for('result_page', filename = filename))
-    return render_template('upload_page.html', image = filename, msg = message)
+    return render_template('upload_page.html', image = filename)
 
 
 @app.route('/result/<filename>')
@@ -230,6 +210,23 @@ def is_recognized():
             else: 
                 return jsonify({'status' : 'processing'})
         return jsonify({'status' : 'error'})
+@app.route('/number_of_human_faces', methods=['POST'])
+def nrof_human_faces():
+    '''
+    fetch the number of human faces in the 'filename' from the cache
+    or return -1 if the workers could not finish processing 
+    input: 
+        :filename str name of the file
+    output: 
+        :json {nrof_faces: a_nrof_human_faces}
+    '''
+    if request.method == 'POST':
+        filename = request.form['filename']
+        if meta_cache.exists(filename): 
+            nrof_faces = get_file_properties(meta_cache, filename, 'nrof_human_faces')
+            if nrof_faces is not None: 
+                return jsonify({'nrof_faces' : nrof_faces})
+    return jsonify({'nrof_faces' : '-1'})
 
 @app.route('/about')
 def about_page():
