@@ -1,6 +1,5 @@
 docker-stack.yml
 dogImagesTrain/
-ssl-certs/
 uploads/
 docker-compose.yml
 ec2-docker-compose.yml
@@ -10,3 +9,5 @@ keys/
 .project
 .pydevproject
 secrets.py
+*.crt
+*.key
