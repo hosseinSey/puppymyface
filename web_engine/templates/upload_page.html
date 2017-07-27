@@ -60,13 +60,13 @@
 		    		$('#form-submit').show();
 		    		var nrof_face_msg;
 		    		if (response.nrof_faces === 0){
-		    			nrof_face_msg = "We recognized no human face in the picture.";
+		    			nrof_face_msg = "We couldn't recognized any human face in this photo.";
 		    		} else if (response.nrof_faces === 1){
-		    			nrof_face_msg = "We recognized ONE human face in the picture.";
+		    			nrof_face_msg = "We recognized ONE human face in this photo.";
 		    		} else {
-		    			nrof_face_msg = "We recognized more than one human face in the picture.";
+		    			nrof_face_msg = "We recognized more than one human face in this photo.";
 		    		}
-		    		$(pMsgId).text(nrof_face_msg); "We recognized " 
+		    		$(pMsgId).text(nrof_face_msg); 
 		    		$(pMsgId).show(); 
 		    		
 		    	}

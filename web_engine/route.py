@@ -21,7 +21,7 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 KEY_SESSION_ID_COUNT = 'last_session_id'
 MAX_SESSION_COUNT = 2**16
 SESSION_ID_KEY = 'id'
-EXPIRE_AFTER_MINS = 60  # expire the uploaded image after this many minutes
+EXPIRE_AFTER_MINS = 20  # expire the uploaded image after this many minutes
 
 app.config.from_object(BaseConfig)
 
@@ -83,6 +83,22 @@ def site_analytics():
         meta_cache.set('first_visit_day', strftime("%d %b %Y", localtime()))    
     meta_cache.incr('hits')
 
+def photo_uploaded(is_new_file):
+    '''
+    perform the book keeping actions when a new file is uploaded.
+    input
+        :boolean there is a new file if True otherwise False
+    return 
+        :int the number of photos uploaded 
+    '''
+    key_name_nrof_photo = 'nrof_photos'
+    if not meta_cache.get(key_name_nrof_photo): 
+        meta_cache.set(key_name_nrof_photo, 0)
+    if is_new_file: 
+        meta_cache.incr(key_name_nrof_photo)
+    return meta_cache.get(key_name_nrof_photo).decode()
+    
+
 # For a given file, return whether it's an allowed type or not
 def allowed_file(filename):
     filename = str(filename).lower()
@@ -118,7 +134,8 @@ def home():
             # set the file properties:
             set_file_properties(meta_cache, filename, session_id = session_id) 
             set_file_properties(meta_cache, filename, private_to_device = 'True')
-            
+            # Perform the book keeping actions 
+            photo_uploaded(True)
             # This is how to retrieve the image:  
             #file_object = pickle.loads(image_cache.get(filename))
             return redirect(url_for('upload_page', filename = filename))
@@ -233,11 +250,12 @@ def about_page():
     #count the number of times an image is puppied
     return render_template('about.html', 
                        visit_number = meta_cache.get('hits').decode(),
-                       since = meta_cache.get('first_visit_day').decode())
+                       since = meta_cache.get('first_visit_day').decode(), 
+                       nrof_photos_uploaded = photo_uploaded(False))
 
 @app.route('/privacy_policy')
 def privacy_policy_page():
-    return ''
+    return render_template('privacy_policy.html', file_life_span= EXPIRE_AFTER_MINS)
 
 
 if __name__ == '__main__':

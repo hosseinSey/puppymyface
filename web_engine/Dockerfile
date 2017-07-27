@@ -31,10 +31,6 @@ RUN pip install -r /var/www/requirements.txt
 
 ##################### INSTALLATION END #####################
 
-# Create the upload folder with the permission  
-RUN mkdir /tmp/uploads
-RUN chmod 777 /tmp/uploads
-
 # expose container ports for HTTP on 5000 and for HTTPS on 443.
 # If you are using the --https-only option for Apache,
 # use --https-port 443 and expose 443 for https. Otherwise, there

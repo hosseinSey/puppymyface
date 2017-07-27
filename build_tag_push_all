@@ -8,7 +8,7 @@ docker tag cnn_puppier:latest temdy/cnn_puppier:latest
 #docker tag face_recognizer temdy/face_recognizer:latest
 docker tag blob_cache:latest temdy/blob_cache:latest
 
-#docker push temdy/puppymyface:latest
-#docker push temdy/cnn_puppier:latest
+docker push temdy/puppymyface:latest
+docker push temdy/cnn_puppier:latest
 #docker push temdy/face_recognizer:latest
 #docker push temdy/blob_cache:latest 
