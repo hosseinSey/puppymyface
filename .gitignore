@@ -1,13 +1,10 @@
 docker-stack.yml
 dogImagesTrain/
-uploads/
 docker-compose.yml
-ec2-docker-compose.yml
 __pycache__
 keys/
 .DS_Store
 .project
 .pydevproject
-secrets.py
 *.crt
 *.key

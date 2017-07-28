@@ -1,0 +1,96 @@
+version: "3"
+services:
+    nginx:
+        build: ./nginx/
+        image: temdy/nginx:latest
+        ports:
+          - "80:80"
+        networks:
+          - frontend
+        depends_on:
+          - web_engine
+    web_engine:
+        build: ./web_engine/
+        image: temdy/puppymyface_web:latest
+        networks:
+          - frontend
+        volumes: 
+          - $PWD/web_engine:/web_engine
+        depends_on:
+          - meta_cache
+          - image_cache
+        deploy:
+          replicas: 1
+          update_config:
+            parallelism: 1
+          restart_policy:
+            condition: on-failure
+          placement:
+            constraints: [node.role == manager]
+        environment:
+          - SECRET_KEY=a_hard_to_guess_secret
+          - DEBUG=False
+          - META_CACHE_HOST=meta_cache
+          - META_CACHE_PORT=6379
+          - IMAGE_CACHE_HOST=image_cache
+          - IMAGE_CACHE_PORT=6000
+    worker:
+        image: temdy/cnn_puppier:latest
+        networks:
+          - frontend
+          - backend
+        depends_on:
+          - meta_cache
+          - image_cache
+        deploy:
+          replicas: 1
+          update_config:
+            parallelism: 1
+          restart_policy:
+            condition: on-failure
+          placement:
+            constraints: [node.role == worker]
+        environment:
+          - META_CACHE_HOST=meta_cache
+          - META_CACHE_PORT=6379
+          - IMAGE_CACHE_HOST=image_cache
+          - IMAGE_CACHE_PORT=6000
+    meta_cache:
+        image: redis:alpine
+        ports:
+          - "6379"
+        networks:
+          - frontend
+          - backend
+        deploy:
+          replicas: 1
+          update_config:
+            parallelism: 2
+            delay: 10s
+          restart_policy:
+            condition: on-failure
+          placement:
+            constraints: [node.role == manager]
+    image_cache:
+        build:
+          context: ./redis_containers/
+          dockerfile: dockerfile_blob_redis
+        image: temdy/blob_cache
+        ports:
+          - "6000"
+        networks:
+          - frontend
+          - backend
+        deploy:
+          replicas: 1
+          update_config:
+            parallelism: 2
+            delay: 10s
+          restart_policy:
+            condition: on-failure
+          placement:
+            constraints: [node.role == manager]
+
+networks:
+    frontend:
+    backend:
