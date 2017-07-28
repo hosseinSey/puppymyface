@@ -1,5 +1,5 @@
 ############################################################
-# Dockerfile to build Flask App
+# Dockerfile to build Flask app with Nginx and Gunicorn
 ############################################################
 
 # Set the base image from https://hub.docker.com/_/python/
@@ -8,67 +8,30 @@ FROM python:3.6
 # File Author / Maintainer
 MAINTAINER Hossein Medy (hossein.medy@gmail.com)
 
-################## BEGIN INSTALLATION ######################
+################## INSTALL PACKAGES / PIP ######################
 
 # Update the repository sources list once more
 RUN apt-get update
 
-# Install Apache and some other handy packages
 RUN apt-get install -y \
-    apache2 \
-	apache2-dev \
-    vim less git-all\
+    vim less \
   && apt-get clean \
   && apt-get autoremove \
   && rm -rf /var/lib/apt/lists/*
 
-# Install the WSGI interface into Python
-RUN pip install mod_wsgi
+# install application requirements in a separate step
+COPY requirements.txt /web_engine/requirements.txt
+RUN pip install -r /web_engine/requirements.txt
 
-# intall application requirements in this separate step so that it doesn't invalidate Docker's cache
-COPY requirements.txt /var/www/requirements.txt
-RUN pip install -r /var/www/requirements.txt
-
-##################### INSTALLATION END #####################
-
-# expose container ports for HTTP on 5000 and for HTTPS on 443.
-# If you are using the --https-only option for Apache,
-# use --https-port 443 and expose 443 for https. Otherwise, there
-# will be a mix up in the forwarding. 
+################## COPYING FILES, etc. ###################
+ADD . /web_engine
+WORKDIR /web_engine
 EXPOSE 5000
-
-#copy the entire application 
-ADD . /var/www/web_engine
-
-WORKDIR /var/www
 
 # download and add libraries and utilities   
 RUN git clone https://github.com/TeMedy/home_made_utils.git 
-RUN cp home_made_utils/file_utils.py /var/www/web_engine/src/
+RUN cp home_made_utils/file_utils.py /web_engine/src/
 
-# make certificates accessible only by the root user
-RUN chmod 600 web_engine/ssl-certs/*
-
-CMD mod_wsgi-express start-server web_engine/wsgi.py \
-  --user www-data --group www-data \
-  --port=5000 \
-  --reload-on-changes \
-  --log-to-terminal \
-  --startup-log \
-  --locale C.UTF-8 \
-  --rewrite-rules web_engine/rewrite.conf \
-  --server-root=/etc/mod_wsgi-express-80
-  
-#  --https-port 443 \
-#  --server-name www.puppymyface.com \
-#  --server-alias puppymyface.com \
-#  --https-only \
-#  --ssl-certificate-key-file ./web_engine/ssl-certs/server.key \
-#  --ssl-certificate-file ./web_engine/ssl-certs/server.crt \
-#  --ssl-certificate-chain-file ./web_engine/ssl-certs/gd_bundle-g2-g1.crt
-
-#WORKDIR /var/www/web_engine
-#CMD python route.py
-
+################## ENTRY TO CONTAINER ###################
+CMD gunicorn route:app -c gunicorn_config.py
 #CMD /bin/bash
-#CMD /etc/mod_wsgi-express-80/apachectl start

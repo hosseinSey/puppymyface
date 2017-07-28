@@ -1,20 +1,16 @@
-from web_engine import app
-
-# for running on the local machine: 
-if __name__ == '__main__': 
-    from flask import Flask
-    app = Flask('web_engine') #app = Flask('web_engine')
-
 import io, logging
 import pickle            
 from time import localtime, strftime, time
 from redis import Redis 
-from .config import BaseConfig
+from config import BaseConfig
+from flask import Flask
 from flask import render_template, request, redirect, url_for, send_from_directory, send_file, session
 from flask import jsonify
 from werkzeug import secure_filename
 #the file utils will be added while building by Docker (see the Dockerfile)
-from .src.file_utils import get_file_properties, set_file_properties
+from src.file_utils import get_file_properties, set_file_properties
+from src.data_utils import dog_files_for_breed
+
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
@@ -23,6 +19,7 @@ MAX_SESSION_COUNT = 2**16
 SESSION_ID_KEY = 'id'
 EXPIRE_AFTER_MINS = 20  # expire the uploaded image after this many minutes
 
+app = Flask(__name__)  # i.e., app = Flask('web_engine')
 app.config.from_object(BaseConfig)
 
 # Cache for the meta data and working variables 
@@ -166,7 +163,6 @@ def send_file_from_cache(filename):
 
 @app.route('/dogs/<breed_name>/<index>')
 def send_dog_file(breed_name, index):
-    from web_engine.src.data_utils import dog_files_for_breed
     paths, files = dog_files_for_breed(breed_name)
     if files: 
         return send_from_directory(paths[int(index) % len(paths)], files[int(index) % len(files)])
