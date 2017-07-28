@@ -8,30 +8,23 @@ FROM python:3.6
 # File Author / Maintainer
 MAINTAINER Hossein Medy (hossein.medy@gmail.com)
 
-################## INSTALL PACKAGES / PIP ######################
-
-# Update the repository sources list once more
-RUN apt-get update
-
-RUN apt-get install -y \
-    vim less \
-  && apt-get clean \
-  && apt-get autoremove \
-  && rm -rf /var/lib/apt/lists/*
-
-# install application requirements in a separate step
+# install application requirements
 COPY requirements.txt /web_engine/requirements.txt
 RUN pip install -r /web_engine/requirements.txt
 
-################## COPYING FILES, etc. ###################
-ADD . /web_engine
+# Set the application working directory
 WORKDIR /web_engine
-EXPOSE 5000
 
-# download and add libraries and utilities   
+# Copy our code from the current folder to /web_engine inside the container
+ADD . /web_engine
+
+# download and add external libraries and utilities   
 RUN git clone https://github.com/TeMedy/home_made_utils.git 
 RUN cp home_made_utils/file_utils.py /web_engine/src/
 
-################## ENTRY TO CONTAINER ###################
+# Make port 5000 available for links and/or publish
+EXPOSE 5000
+
+# Define our command to be run when launching the container
 CMD gunicorn route:app -c gunicorn_config.py
 #CMD /bin/bash
