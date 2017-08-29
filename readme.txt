@@ -6,6 +6,7 @@
     - [Get Started with Docker in 6 steps: 1: Orientation 2: Containers 3: Services 4: Swarms 5: Stacks 6: Deploy your app](https://docs.docker.com/get-started/)
     - [Uploading Files to a Database in Flask](https://www.youtube.com/watch?v=TLgVEBuQURA)
     - [Returning Files From a Database in Flask:](https://www.youtube.com/watch?v=QPI3rzZow6k)
+    - [Dockerized Nginx+Gunicorn](https://github.com/realpython/dockerizing-django)
 
 
 # DNS and SSL setup:

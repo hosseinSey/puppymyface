@@ -51,20 +51,13 @@ def get_or_creat_session():
         return session[SESSION_ID_KEY]
     
 
-def get_breed_from_cache(filename):
-    if meta_cache.exists(filename): 
-        #exprie the file 
-        if image_cache.exists(filename):
-            image_cache.expire(filename, 2 * 60)
-        return get_file_properties(meta_cache, filename, 'breed')
-
 def is_image_expired(filename):
     '''
     Check the cache to see if the image has been expired.
     Expiration happens when file exists in the meta_cache but not in image_cache
     '''
     # TODO: implement this in proper way!
-    if filename not in image_cache: 
+    if filename in meta_cache and filename not in image_cache: 
         return True
     return False
 
@@ -190,7 +183,7 @@ def upload_page(filename):
 
 @app.route('/result/<filename>')
 def result_page(filename):
-    breed = get_breed_from_cache(filename) 
+    breed = get_file_properties(meta_cache, filename, 'breed') 
     # if the results are back: 
     if breed :
         message = "Hey! We think you resemble the <b> {} </b> breed!".format(breed.replace('_', ' '))
