@@ -21,9 +21,10 @@ However, if using GoDaddy see their help [page](https://ca.godaddy.com/help/apac
 You basically need to generate a private key (.key) file. Then use that to generate a certificate signing request (.csr). Upload the csr file to your certificate authority of choice (GoDaddy in my case), and obtain the .crt file. In my case GoDaddy generates two .crt file. one is *bundle*d and the other one has a long series of meaning less numbers in its name. I use the latter as my *server.crt*.
 
 ### Upload SSL certificates to AWS
-First, issue the CSR file for the full address www.example.com not the naked address (example.com).
+First, issue the CSR file for the full address www.example.com, not the naked address (example.com).
 http://markshust.com/2014/04/13/install-godaddy-ssl-certificate-aws-elb
 https://stackoverflow.com/questions/991758/how-to-get-pem-file-from-key-and-crt-files
+Instructions on how to work with certificates in AWS: http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html#delete-server-certificate
 aws iam upload-server-certificate --server-certificate-name www.puppymyface.com --certificate-body file://server.crt --private-key file://server.key --certificate-chain file://gd_bundle-g2-g1.crt
 
 

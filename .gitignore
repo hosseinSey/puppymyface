@@ -8,3 +8,5 @@ keys/
 .pydevproject
 *.crt
 *.key
+*.pem
+*.csr

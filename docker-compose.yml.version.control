@@ -73,7 +73,7 @@ services:
             constraints: [node.role == manager]
     image_cache:
         build:
-          context: ./redis_containers/
+          context: ./redis/
           dockerfile: dockerfile_blob_redis
         image: temdy/blob_cache
         ports:
