@@ -10,3 +10,4 @@ keys/
 *.key
 *.pem
 *.csr
+secrets.env
