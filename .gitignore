@@ -1,6 +1,4 @@
-docker-stack.yml
 dogImagesTrain/
-docker-compose.yml
 __pycache__
 keys/
 .DS_Store
