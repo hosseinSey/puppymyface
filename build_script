@@ -1,0 +1,12 @@
+#
+# Script for all the builds
+#
+
+cd front_end/react_app/
+
+# Build the reacd app
+npm run build
+
+cd ../../
+
+docker-compose build

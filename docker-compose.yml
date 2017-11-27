@@ -18,10 +18,12 @@ services:
     web_engine:
         build: ./web_engine/
         image: temdy/puppymyface_web:latest
-        networks:
-          - frontend
+        #ports:
+        #  - "5000:5000"
         #volumes:
         #  - $PWD/web_engine:/web_engine
+        networks:
+          - frontend
         depends_on:
           - meta_cache
           - image_cache
