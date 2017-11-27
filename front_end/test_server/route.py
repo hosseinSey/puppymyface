@@ -23,8 +23,8 @@ def gen_random_name():
 
 @app.route('/')
 def home():
-    page = '<h1> hi </h1>this is the first page'
-    return page + render_template('index.html')
+    page = '<h1> hi </h1>this is the home page'
+    return page
 
 
 @app.route('/upload', methods=['POST'])
