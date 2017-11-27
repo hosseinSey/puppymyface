@@ -4,7 +4,7 @@ docker stop $(docker ps -a -q)
 # remove all container
 docker rm $(docker ps -a -q)
 
-# remove all container images 
+# remove all container images
 # docker rmi --force $(docker images -q)
 
 # remove all [dangling]  docker volumes
