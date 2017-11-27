@@ -16,8 +16,8 @@ services:
           - "5000:5000"
         networks:
           - frontend
-        volumes:
-          - $PWD/web_engine:/web_engine
+        #volumes:
+        #  - $PWD/web_engine:/web_engine
         depends_on:
           - meta_cache
           - image_cache
