@@ -17,13 +17,10 @@
     "react-loading-components": "^1.1.12"
   },
   "scripts": {
-    "rm-oldfiles-dev": "rm -rf ../test_file_server/static/css/* && rm -rf ../test_file_server/static/js/*",
-    "cp-newfiles-dev": "cp build/index.html ../test_file_server/templates/ && cp -a build/static/. ../test_file_server/static/",
-    "rm-oldfiles-prod": "rm -rf /Users/Hossein/Documents/workspace/puppymyface/web_engine/static/css/* && rm -rf /Users/Hossein/Documents/workspace/puppymyface/web_engine/static/js/*",
-    "cp-newfiles-prod": "cp build/index.html /Users/Hossein/Documents/workspace/puppymyface/web_engine/templates/ && cp -a build/static/. /Users/Hossein/Documents/workspace/puppymyface/web_engine/static/",
+    "rm-oldfiles": "rm -rf ../../web_engine/static/css/* && rm -rf ../../web_engine/static/js/*",
+    "cp-newfiles": "cp build/index.html ../../web_engine/templates/ && cp -a build/static/. ../../web_engine/static/",
     "start": "react-scripts start",
-    "build-dev": "react-scripts build && npm run rm-oldfiles-dev && npm run cp-newfiles-dev",
-    "build-prod": "react-scripts build && npm run rm-oldfiles-prod && npm run cp-newfiles-prod",
+    "build": "react-scripts build && npm run rm-oldfiles && npm run cp-newfiles",
     "eject": "react-scripts eject",
     "test": "react-scripts test"
   }
