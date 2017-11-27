@@ -18,8 +18,6 @@ services:
     web_engine:
         build: ./web_engine/
         image: temdy/puppymyface_web:latest
-        ports:
-          - "5000:5000"
         networks:
           - frontend
         #volumes:

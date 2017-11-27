@@ -1,4 +1,4 @@
-dogImagesTrain/
+node_modules/
 dog_images/
 __pycache__
 keys/
