@@ -9,6 +9,12 @@ services:
           - frontend
         depends_on:
           - web_engine
+        deploy:
+          replicas: 1
+          restart_policy:
+            condition: on-failure
+          placement:
+            constraints: [node.role == manager]
     web_engine:
         build: ./web_engine/
         image: temdy/puppymyface_web:latest
