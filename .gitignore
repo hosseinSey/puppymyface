@@ -9,4 +9,5 @@ keys/
 *.key
 *.pem
 *.csr
+*.jpg
 secrets.env
